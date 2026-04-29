@@ -1,0 +1,17 @@
+[AutoRun]
+; ──────────────────────────────────────────────────────────────
+;  HDD Monitor AutoRun Configuration
+;  Place this file in the ROOT of your External HDD.
+;
+;  NOTE: AutoRun works on Windows XP/Vista/7 automatically.
+;  On Windows 10/11, AutoPlay may need to be enabled or
+;  use the Task Scheduler method (see README_SETUP.txt).
+; ──────────────────────────────────────────────────────────────
+
+label=My External HDD
+icon=hdd_monitor.ico
+
+; Auto-run the monitor script when drive is connected
+open=run_monitor.bat
+action=Run HDD Health Monitor
+shell\open\command=run_monitor.bat

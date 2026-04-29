@@ -1,13 +1,3 @@
-"""
-=============================================================
-  HDD Monitor & Email Alert System
-  ---------------------------------
-  Place this file on the ROOT of your External HDD.
-  When your HDD is connected, it checks drive health
-  and sends you an important email with the full report.
-=============================================================
-"""
-
 import os
 import sys
 import json
@@ -19,13 +9,7 @@ import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
-
-# ──────────────────────────────────────────────
-#  CONFIG FILE  (created by setup_email.py)
-# ──────────────────────────────────────────────
 CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hdd_config.json")
-
-
 def load_config():
     """Load email config from JSON file."""
     if not os.path.exists(CONFIG_FILE):
@@ -33,18 +17,11 @@ def load_config():
         sys.exit(1)
     with open(CONFIG_FILE, "r") as f:
         return json.load(f)
-
-
-# ──────────────────────────────────────────────
-#  DRIVE DETECTION
-# ──────────────────────────────────────────────
 def get_drive_letter():
     """Auto-detect which drive letter this script is running from."""
     script_path = os.path.abspath(__file__)
     drive = os.path.splitdrive(script_path)[0]
     return drive if drive else "Unknown"
-
-
 def get_drive_info(drive_letter):
     """Get total, used, and free space of the drive."""
     info = {}
@@ -58,11 +35,6 @@ def get_drive_info(drive_letter):
     except Exception as e:
         info["error"] = str(e)
     return info
-
-
-# ──────────────────────────────────────────────
-#  S.M.A.R.T. HEALTH CHECK  (Windows & Linux)
-# ──────────────────────────────────────────────
 def get_smart_status(drive_letter):
     """
     Try to read S.M.A.R.T. data using wmic (Windows) or smartctl (Linux/Mac).
@@ -136,11 +108,6 @@ def get_smart_status(drive_letter):
         smart["smart_health"] = "Unsupported OS"
 
     return smart
-
-
-# ──────────────────────────────────────────────
-#  SYSTEM INFO
-# ──────────────────────────────────────────────
 def get_system_info():
     return {
         "hostname":    socket.gethostname(),
@@ -150,11 +117,6 @@ def get_system_info():
         "python":      platform.python_version(),
         "timestamp":   datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
-
-
-# ──────────────────────────────────────────────
-#  FILE COUNT & LARGE FILES
-# ──────────────────────────────────────────────
 def get_file_stats(drive_letter, top_n=5):
     """Count files at root level and find largest files (fast scan)."""
     stats = {"root_items": 0, "large_files": []}
@@ -179,11 +141,6 @@ def get_file_stats(drive_letter, top_n=5):
     except Exception as e:
         stats["error"] = str(e)
     return stats
-
-
-# ──────────────────────────────────────────────
-#  BUILD HTML EMAIL
-# ──────────────────────────────────────────────
 def build_html_email(drive_letter, drive_info, smart, sys_info, file_stats):
     """Create a clean, professional HTML email body."""
 
@@ -334,11 +291,6 @@ def build_html_email(drive_letter, drive_info, smart, sys_info, file_stats):
 </html>
 """
     return html
-
-
-# ──────────────────────────────────────────────
-#  SEND EMAIL
-# ──────────────────────────────────────────────
 def send_email(config, subject, html_body):
     """Send HTML email via Gmail SMTP (App Password)."""
     msg = MIMEMultipart("alternative")
@@ -362,21 +314,11 @@ def send_email(config, subject, html_body):
     except Exception as e:
         print(f"❌  Failed to send email: {e}")
         return False
-
-
-# ──────────────────────────────────────────────
-#  LOG EACH CONNECTION
-# ──────────────────────────────────────────────
 def write_log(drive_letter, sys_info, health_text):
     log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "hdd_connection_log.txt")
     with open(log_file, "a") as f:
         f.write(f"[{sys_info['timestamp']}] Connected to: {sys_info['hostname']} ({sys_info['os']}) | "
                 f"Drive: {drive_letter} | Health: {health_text}\n")
-
-
-# ──────────────────────────────────────────────
-#  MAIN
-# ──────────────────────────────────────────────
 def main():
     print("="*55)
     print("  HDD Monitor — Starting Up")
@@ -411,7 +353,5 @@ def main():
     write_log(drive, sys_info, smart.get("smart_health", "Unknown"))
     print("  Log updated → hdd_connection_log.txt")
     print("="*55)
-
-
 if __name__ == "__main__":
     main()
